@@ -1,20 +1,31 @@
+import csv
 import importlib
 import sys
 import unittest
-from io import StringIO
-from unittest.mock import patch
-
 import file_combiner
 
 csv_combiner = importlib.import_module("csv-combiner")
 
 
 class MyTestCase(unittest.TestCase):
+
     def setUp(self):
         self.file_paths = csv_combiner.parse_args(['file1.csv', 'file2.csv'])
         self.combined = file_combiner.FileCombiner(self.file_paths)
+        original = sys.stdout
+        sys.stdout = open('actual.csv', 'w')
+        sys.stdout = original
 
-    def test_parser(self):
+    def test_combine_files(self):
+        with open('actual.csv') as actual, open('expected.csv') as expected:
+            actual_file = csv.reader(actual)
+            expected_file = csv.reader(expected)
+
+            for file1_line in actual_file:
+                file2_line = next(expected_file)
+                self.assertEqual(file1_line, file2_line)
+
+    def test_parse_args(self):
         actual_file_paths = ['file1.csv', 'file2.csv']
         self.assertCountEqual(self.file_paths, actual_file_paths)
 
@@ -24,13 +35,9 @@ class MyTestCase(unittest.TestCase):
         expected_row = ['email_hash', 'category', 'filename']
         self.assertEqual(row, expected_row)
 
-    def test_output(self):
-        out = StringIO
-        sys.stdout = out
-        output = out.getvalue(self.combined.combine_files())
-        self.assertEqual(output,
-                         'email_hash,category,filename\n' + 'b9f6f22276c919da793da65c76345ebb0b072257d12402107d09c89bc369a6b6,Satchels,filename\n' +
-                         'b9f6f22276c919da793da65c76345ebb0b072257d12402107d09c89bc369a6b6,Blouses,filename\n' + 'b9f6f22276c919da793da65c76345ebb0b072257d12402107d09c89bc369a6b6,Kitchen Cleaner,filename')
+    def tearDown(self):
+        sys.stdout.close()
+        f
 
 
 if __name__ == '__main__':
