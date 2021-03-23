@@ -3,7 +3,6 @@ import importlib
 import sys
 import unittest
 import file_combiner
-
 csv_combiner = importlib.import_module("csv-combiner")
 
 
@@ -13,14 +12,15 @@ class MyTestCase(unittest.TestCase):
         self.file_paths = csv_combiner.parse_args(['file1.csv', 'file2.csv'])
         self.combined = file_combiner.FileCombiner(self.file_paths)
         original = sys.stdout
-        sys.stdout = open('actual.csv', 'w')
-        sys.stdout = original
+        with open('actual.csv', 'w') as file:
+            sys.stdout = file
+            self.combined.combine_files()
+            sys.stdout = original
 
     def test_combine_files(self):
         with open('actual.csv') as actual, open('expected.csv') as expected:
             actual_file = csv.reader(actual)
             expected_file = csv.reader(expected)
-
             for file1_line in actual_file:
                 file2_line = next(expected_file)
                 self.assertEqual(file1_line, file2_line)
@@ -34,10 +34,6 @@ class MyTestCase(unittest.TestCase):
         self.combined.add_new_column(row, 'filename')
         expected_row = ['email_hash', 'category', 'filename']
         self.assertEqual(row, expected_row)
-
-    def tearDown(self):
-        sys.stdout.close()
-        f
 
 
 if __name__ == '__main__':

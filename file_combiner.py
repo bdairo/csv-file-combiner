@@ -25,8 +25,7 @@ class FileCombiner:
                     combined.writerow(header)
                     self.is_header_set = True
                 for row in csv_reader:
-                    # add the name of the file to the last row
-                    filename = os.path.basename(file)
-                    self.add_new_column(row, 'filename')
+                    filename = os.path.basename(file) # add the name of the file to the last row
+                    self.add_new_column(row, filename)
                     combined.writerow(row)
 
